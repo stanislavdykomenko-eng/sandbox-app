@@ -3,7 +3,7 @@ import "./App.css";
 import Header from "./header";
 import HomePage from "./pages/HomePage";
 import ConfirmPage from "./pages/ConfirmPage";
-import IframePage from "./pages/IFramePage";
+import AbTestPage from "./pages/AbTestPage";
 
 const App = () => {
   return (
@@ -13,7 +13,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/confirmPage" element={<ConfirmPage />} />
-          <Route path="/frame" element={<IframePage />} />
+          <Route path="/ab-test" element={<AbTestPage />} />
         </Routes>
       </div>
     </div>

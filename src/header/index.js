@@ -8,7 +8,7 @@ const Header = () => {
         Главная
       </NavLink>
       <NavLink to="/confirmPage">Кнопка согласия</NavLink>
-      <NavLink to="/frame">Банк «Решение»</NavLink>
+      <NavLink to="/ab-test">AB TEST</NavLink>
     </nav>
   );
 };
