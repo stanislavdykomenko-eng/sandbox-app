@@ -1,8 +1,7 @@
-import { useState } from "react";
-
+import { useState, useEffect } from "react";
 import "./index.css";
 
-const CHANNELS = [
+const ALL_CHANNELS = [
   { id: "email", label: "Email" },
   { id: "sms", label: "SMS" },
   { id: "viber", label: "Viber" },
@@ -10,37 +9,60 @@ const CHANNELS = [
 ];
 
 const AbTestPage = () => {
-  const [checked, setChecked] = useState({
-    email: false,
-    sms: false,
-    viber: false,
-    calls: false,
-  });
+  const [isThreeChannelGroup, setIsThreeChannelGroup] = useState(false);
+  const [isExperimentReady, setIsExperimentReady] = useState(false);
+
+  useEffect(() => {
+    if (typeof window.ymab === "function") {
+      window.ymab("metrika.114211829", "getFlags", (flags) => {
+        const isBValue = flags["isB"] ? flags["isB"][0] : null;
+        if (isBValue === "threeChannel") {
+          setIsThreeChannelGroup(true);
+        }
+        setIsExperimentReady(true);
+      });
+    } else {
+      console.warn("Varioqub not loaded, defaulting to control group");
+      setIsExperimentReady(true);
+    }
+  }, []);
+
+  // Убираем звонки, если пользователь в группе Б (threeChannel)
+  const channelsToShow = isThreeChannelGroup
+    ? ALL_CHANNELS.filter((ch) => ch.id !== "calls")
+    : ALL_CHANNELS;
+
+  // Инициализируем состояние checked на основе отфильтрованных каналов
+  const [checked, setChecked] = useState(() =>
+    Object.fromEntries(channelsToShow.map((ch) => [ch.id, false])),
+  );
+
+  // Пересоздаём checked при смене группы (на случай, если флаг пришёл позже)
+  useEffect(() => {
+    setChecked(Object.fromEntries(channelsToShow.map((ch) => [ch.id, false])));
+  }, [isThreeChannelGroup]);
 
   const countChecked = Object.values(checked).filter(Boolean).length;
-  const allChecked = countChecked === CHANNELS.length;
-
-  // Мастер-чекбокс: включён, если выбран хотя бы один канал
   const masterChecked = countChecked > 0;
 
   const handleMasterChange = () => {
-    if (masterChecked) {
-      // был включён (есть выбранные) → выключаем все
-      setChecked({ email: false, sms: false, viber: false, calls: false });
-    } else {
-      // был выключен (нет выбранных) → включаем все
-      setChecked({ email: true, sms: true, viber: true, calls: true });
-    }
+    const newValue = !masterChecked;
+    const newChecked = {};
+    channelsToShow.forEach((ch) => (newChecked[ch.id] = newValue));
+    setChecked(newChecked);
   };
 
   const handleChannelChange = (id) => {
     setChecked((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  // Группа: A при 3 каналах, Б при 4
   let group = null;
   if (countChecked === 3) group = "А";
   else if (countChecked === 4) group = "Б";
+
+  if (!isExperimentReady) {
+    return <div className="ab-page">Загрузка эксперимента...</div>;
+  }
 
   return (
     <div className="ab-page">
@@ -64,11 +86,11 @@ const AbTestPage = () => {
         <details className="ab-dropdown" open>
           <summary>Каналы связи ({countChecked} выбрано)</summary>
           <div className="ab-list">
-            {CHANNELS.map((ch) => (
+            {channelsToShow.map((ch) => (
               <label key={ch.id} className="ab-item">
                 <input
                   type="checkbox"
-                  checked={checked[ch.id]}
+                  checked={checked[ch.id] || false}
                   onChange={() => handleChannelChange(ch.id)}
                 />
                 <span>{ch.label}</span>
@@ -86,8 +108,7 @@ const AbTestPage = () => {
           </p>
         ) : (
           <p className="ab-status-muted">
-            Выбрано каналов: <strong>{countChecked}</strong>. Выберите 3 или 4
-            канала, чтобы определить группу.
+            Выбрано каналов: <strong>{countChecked}</strong>.
           </p>
         )}
       </div>
