@@ -57,8 +57,8 @@ const AbTestPage = () => {
   };
 
   let group = null;
-  if (countChecked === 3) group = "А";
-  else if (countChecked === 4) group = "Б";
+  if (countChecked === 3) group = "Б";
+  else if (countChecked === 4) group = "А";
 
   if (!isExperimentReady) {
     return <div className="ab-page">Загрузка эксперимента...</div>;
@@ -69,8 +69,8 @@ const AbTestPage = () => {
       <h1>А/Б тестирование каналов коммуникации</h1>
       <p className="ab-desc">
         Тут мы тестируем каналы коммуникации. Если количество каналов
-        коммуникации на экране = 3, то вы находитесь в группе А, если количество
-        = 4, то вы находитесь в группе Б
+        коммуникации в выпадающем списке = 4, то вы находитесь в группе А, если
+        количество = 3, то вы находитесь в группе Б
       </p>
 
       <div className="ab-block">
